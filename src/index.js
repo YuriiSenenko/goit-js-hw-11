@@ -1,4 +1,3 @@
-import axios from 'axios';
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
@@ -13,17 +12,21 @@ const refs = {
 };
 
 refs.form.addEventListener('submit', onSearchImages);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
-// refs.input.addEventListener('input', onSearchImages);
+let numberPage = 1;
 
+// Пошук зображень
 function onSearchImages(event) {
   event.preventDefault();
-
+  deactivateLoadMoreBTN();
   if (refs.input.value === '') {
     return;
   }
-
-  fetchImages(refs.input.value)
+  resetPage();
+  clearMarkup();
+  // const searchQuery = event.currentTarget.elements.query.value;
+  fetchImages(refs.input.value, numberPage)
     .then(markupCreationCondition)
     .catch(error =>
       Notiflix.Notify.failure(
@@ -32,15 +35,37 @@ function onSearchImages(event) {
     );
 }
 
+// Кнопка LoadMore
+function onLoadMore() {
+  incrementPage();
+  fetchImages(refs.input.value, numberPage)
+    .then(markupCreationCondition)
+    .catch(error =>
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      )
+    );
+}
+function incrementPage() {
+  numberPage += 1;
+}
+function resetPage() {
+  numberPage = 1;
+}
+
 // Умова створення розмітки
 function markupCreationCondition(images) {
+  console.log(numberPage * 40);
+
   if (parseInt(images.totalHits) === 0) {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
     return;
   }
-  Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`);
+  if (numberPage === 1) {
+    Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`);
+  }
   createGaleryMarkup(images);
 }
 
@@ -66,8 +91,7 @@ function createGaleryMarkup(images) {
     </p>
     <p class="info-item">
       <b>Views</b>${views}
-    </p>
-    <p class="info-item">
+     <p class="info-item">
       <b>Comments</b>${comments}
     </p>
     <p class="info-item">
@@ -82,4 +106,28 @@ function createGaleryMarkup(images) {
   new SimpleLightbox('.gallery a', {
     animationSpeed: 150,
   });
+
+  // Активує кнопку після першої сторінки
+  activateLoadMoreBTN();
+
+  // якщо закінчились картинки, виводить повідомлення і вімикає кнопку
+  if (numberPage * 40 > parseInt(images.totalHits)) {
+    deactivateLoadMoreBTN();
+
+    Notiflix.Notify.failure(
+      "We're sorry, but you've reached the end of search results."
+    );
+  }
+}
+
+function clearMarkup() {
+  refs.gallery.innerHTML = '';
+}
+
+function activateLoadMoreBTN() {
+  refs.loadMoreBtn.classList.add('is-hidden');
+}
+
+function deactivateLoadMoreBTN() {
+  refs.loadMoreBtn.classList.remove('is-hidden');
 }
