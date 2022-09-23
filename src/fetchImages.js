@@ -1,6 +1,6 @@
 const URL = 'https://pixabay.com/api/';
 const API_KEY = '30036034-49bdb558087010c436563671a';
-const perPage = 20;
+const perPage = 40;
 
 export default function fetchImages(searchValue, numberPage) {
   return fetch(
