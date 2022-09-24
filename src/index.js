@@ -55,7 +55,7 @@ function resetPage() {
 
 // Умова створення розмітки
 function markupCreationCondition(images) {
-  console.log(numberPage * 40);
+  // console.log(numberPage * 40);
 
   if (parseInt(images.totalHits) === 0) {
     Notiflix.Notify.failure(
